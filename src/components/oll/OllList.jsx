@@ -28,7 +28,7 @@ const OllList = ({ trainingCardId, showAnswer, setShowAnswer }) => {
                                 <motion.div
                                     layout
                                     key={oll.id}
-                                    id={oll-card-}
+                                    id={`oll-card-${oll.id}`}
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}

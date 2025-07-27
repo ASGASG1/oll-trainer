@@ -6,7 +6,7 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer }) {
     const { learnedSet, toggleLearned } = useOll();
     const isLearned = learnedSet.has(oll.id);
 
-    const cardClassName = oll-card  ;
+    const cardClassName = `oll-card ${isLearned ? 'learned' : ''} ${isTraining ? 'training' : ''}`;
     
     const checkmarkVariants = {
       hidden: { scale: 0.5, opacity: 0 },
@@ -19,8 +19,8 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer }) {
                 <img 
                     className="oll-card-image"
                     src={oll.image} 
-                    alt={OLL  - }
-                    onError={(e) => { e.target.onerror = null; e.target.src = https://placehold.co/112x112/e2e8f0/94a3b8?text=OLL+; }}
+                    alt={`OLL ${oll.id} - ${oll.name}`}
+                    onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/112x112/e2e8f0/94a3b8?text=OLL+${oll.id}`; }}
                 />
             </div>
             
@@ -52,7 +52,7 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer }) {
                     </label>
                 </div>
                 <h4 className="oll-card-title">
-                    {oll.name || Алгоритм #}
+                    {oll.name || `Алгоритм #${oll.id}`}
                 </h4>
                 <div className="oll-card-alg-wrapper">
                     {isTraining && !showAnswer ? (
@@ -61,7 +61,7 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer }) {
                         </button>
                     ) : (
                         <a 
-                            href={./cub/index.html?stage=OLL&type=alg&alg=&view=playback}
+                            href={`./cub/index.html?stage=OLL&type=alg&alg=${encodeURIComponent(oll.alg)}&view=playback`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="oll-card-alg"

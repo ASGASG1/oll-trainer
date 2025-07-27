@@ -19,7 +19,9 @@ const Controls = ({ setTrainingCardId, setShowAnswer }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const searchInputRef = useRef(null);
-    const searchWrapperRef = useRef(null);
+    
+    // ИСПРАВЛЕНИЕ: Создаем ref для всей панели управления
+    const controlsPanelRef = useRef(null);
 
     useEffect(() => {
         if (isSearchVisible) {
@@ -27,19 +29,18 @@ const Controls = ({ setTrainingCardId, setShowAnswer }) => {
         }
     }, [isSearchVisible]);
 
+    // ИСПРАВЛЕНИЕ: Логика теперь проверяет клик вне всей панели
     useEffect(() => {
         function handleClickOutside(event) {
-            if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target)) {
+            if (controlsPanelRef.current && !controlsPanelRef.current.contains(event.target)) {
                 setIsSearchVisible(false);
             }
         }
-        if (isSearchVisible) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
+        document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isSearchVisible]);
+    }, []); // Пустой массив зависимостей, чтобы хук сработал один раз
 
     const handleReset = () => {
         resetProgress();
@@ -56,16 +57,18 @@ const Controls = ({ setTrainingCardId, setShowAnswer }) => {
         setShowAnswer(false);
 
         setTimeout(() => {
-            document.getElementById(oll-card-)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById(`oll-card-${randomCard.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
     };
 
     return (
         <>
             <div className="controls-sticky-container">
-                <div className="controls-panel">
+                {/* ИСПРАВЛЕНИЕ: Добавляем ref сюда */}
+                <div className="controls-panel" ref={controlsPanelRef}>
                     <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                        <div className="controls-row" ref={searchWrapperRef}>
+                        {/* ИСПРАВЛЕНИЕ: ref отсюда убран */}
+                        <div className="controls-row">
                             <div className="buttons-wrapper">
                                 <button onClick={() => setIsSearchVisible(!isSearchVisible)} className="btn btn-slate btn-icon" aria-label="Открыть/Закрыть поиск">
                                     <SearchIcon style={{width: '1.25rem', height: '1.25rem'}} />
@@ -103,7 +106,7 @@ const Controls = ({ setTrainingCardId, setShowAnswer }) => {
                             <div className="controls-row" style={{marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-light)'}}>
                                 <div className="filter-buttons-wrapper">
                                     {[{id: 'all', label: 'Все'}, {id: 'unlearned', label: 'Невыученные'}, {id: 'learned', label: 'Выученные'}].map(filter => (
-                                        <button key={filter.id} onClick={() => setActiveFilter(filter.id)} className={ilter-btn }>
+                                        <button key={filter.id} onClick={() => setActiveFilter(filter.id)} className={`filter-btn ${activeFilter === filter.id ? 'active' : ''}`}>
                                             {filter.label}
                                         </button>
                                     ))}

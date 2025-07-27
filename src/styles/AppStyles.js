@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 
 const AppStyles = () => (
-  <style>{
+  <style>{`
     :root {
       --bg-light: #f1f5f9;
       --bg-dark: #0f172a;
@@ -417,7 +417,7 @@ const AppStyles = () => (
         font-size: 0.9rem;
       }
     }
-  }
+  `}
   </style>
 );
 
