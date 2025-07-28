@@ -74,7 +74,8 @@ const AppStyles = () => (
       padding: 0.5rem;
     }
     .app-nav a:hover { color: var(--text-light); }
-    .app-nav a.active { color: var(--blue-600); }
+    /* Стиль для активной ссылки теперь задается в Header.jsx, этот класс можно удалить или оставить */
+    .app-nav a.active { color: var(--blue-600); } 
     .dark .app-nav a.active { color: var(--blue-500); }
 
     .theme-switcher {
@@ -121,9 +122,16 @@ const AppStyles = () => (
       transition: border-color 0.2s, box-shadow 0.2s;
       font-size: 1rem;
     }
+
+    /* ИЗМЕНЕНИЕ 1: Новый стиль для текста-подсказки */
+    .search-input::placeholder {
+      color: var(--slate-400);
+    }
+
     .dark .search-input {
         border-color: var(--slate-600);
         background-color: var(--slate-700);
+        color: var(--text-dark); /* ИЗМЕНЕНИЕ 2: Явно задаем светлый цвет для вводимого текста */
     }
     .search-input:focus {
       border-color: var(--blue-500);

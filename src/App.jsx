@@ -1,44 +1,35 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
-import { OllProvider } from './context/OllContext';
+// OllProvider больше не нужен здесь
 import AppStyles from './styles/AppStyles';
 import Header from './components/layout/Header';
-import Controls from './components/layout/Controls';
-import OllList from './components/oll/OllList';
+
+import OllPage from './pages/OllPage';
+import PllPage from './pages/PllPage';
+import F2lPage from './pages/F2lPage';
+import CrossPage from './pages/CrossPage';
 
 function AppContent() {
-    const [trainingCardId, setTrainingCardId] = useState(null);
-    const [showAnswer, setShowAnswer] = useState(false);
-
     useEffect(() => {
         const CapacitorApp = window.Capacitor?.Plugins?.App;
         if (!CapacitorApp) return;
-
         const listener = CapacitorApp.addListener('backButton', () => {
-            if (trainingCardId) {
-                setTrainingCardId(null);
-            } else {
-                CapacitorApp.exitApp();
-            }
+            CapacitorApp.exitApp();
         });
-
         return () => listener.remove();
-    }, [trainingCardId]);
+    }, []);
 
     return (
         <div className="app-container">
             <Header />
-            <Controls 
-                setTrainingCardId={setTrainingCardId}
-                setShowAnswer={setShowAnswer}
-            />
-            <main style={{ marginTop: '2rem' }}>
-                <OllList 
-                    trainingCardId={trainingCardId}
-                    showAnswer={showAnswer}
-                    setShowAnswer={setShowAnswer}
-                />
-            </main>
+            <Routes>
+                <Route path="/" element={<OllPage />} />
+                <Route path="/pll" element={<PllPage />} />
+                <Route path="/f2l" element={<F2lPage />} />
+                <Route path="/cross" element={<CrossPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
         </div>
     );
 }
@@ -46,10 +37,11 @@ function AppContent() {
 export default function App() {
     return (
         <ThemeProvider>
-            <OllProvider>
+            {/* OllProvider убран отсюда */}
+            <BrowserRouter>
                 <AppStyles />
                 <AppContent />
-            </OllProvider>
+            </BrowserRouter>
         </ThemeProvider>
     );
 }
