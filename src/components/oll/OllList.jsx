@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useOll } from '../../context/OllContext';
 import { OllCard } from './OllCard';
 
-const OllList = ({ trainingCardId, showAnswer, setShowAnswer }) => {
+// Добавляем onOpenPlayer в пропсы
+const OllList = ({ trainingCardId, showAnswer, setShowAnswer, onOpenPlayer }) => {
     const { groupedOLLs, filteredOLLs } = useOll();
 
     if (filteredOLLs.length === 0) {
@@ -25,20 +26,13 @@ const OllList = ({ trainingCardId, showAnswer, setShowAnswer }) => {
                     <motion.div layout className="card-grid">
                         <AnimatePresence>
                             {olls.map(oll => (
-                                <motion.div
-                                    layout
-                                    key={oll.id}
-                                    id={`oll-card-${oll.id}`}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ duration: 0.2 }}
-                                >
+                                <motion.div layout key={oll.id} id={`oll-card-${oll.id}`} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.2 }}>
                                     <OllCard 
                                         oll={oll}
                                         isTraining={trainingCardId === oll.id}
                                         showAnswer={showAnswer}
                                         onShowAnswer={() => setShowAnswer(true)}
+                                        onOpenPlayer={onOpenPlayer} // Передаем функцию дальше
                                     />
                                 </motion.div>
                             ))}

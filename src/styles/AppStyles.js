@@ -354,6 +354,7 @@ const AppStyles = () => (
       display: inline-block;
       transition: background-color 0.2s, color 0.2s;
       word-break: break-all;
+      cursor: pointer;
     }
     .dark .oll-card-alg {
       color: #93c5fd;

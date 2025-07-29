@@ -4,8 +4,9 @@ import { ConfirmModal } from '../components/modal/ConfirmModal';
 import { SearchIcon, ShuffleIcon, FilterIcon, XIcon } from '../components/common/Icons';
 import { PllCard } from '../components/pll/PllCard';
 import { motion, AnimatePresence } from 'framer-motion';
+import PlayerModal from '../components/modal/PlayerModal';
 
-// Адаптируем Controls, добавив логику сворачивания поиска
+// Компонент панели управления, специфичный для PLL
 const PllControls = ({ setTrainingCardId, setShowAnswer }) => {
     const {
         filteredPLLs, learnedSet, resetProgress, searchTerm,
@@ -66,7 +67,6 @@ const PllControls = ({ setTrainingCardId, setShowAnswer }) => {
                                 </button>
                             </div>
                         </div>
-
                         {isSearchVisible && (
                              <div className="search-wrapper" style={{ maxWidth: 'none', marginTop: '1rem' }}>
                                 <input
@@ -84,7 +84,6 @@ const PllControls = ({ setTrainingCardId, setShowAnswer }) => {
                                 )}
                             </div>
                         )}
-
                         {showAdvanced && (
                             <div className="controls-row" style={{marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-light)'}}>
                                 <div className="filter-buttons-wrapper">
@@ -110,7 +109,8 @@ const PllControls = ({ setTrainingCardId, setShowAnswer }) => {
     );
 };
 
-const PllList = ({ trainingCardId, showAnswer, setShowAnswer }) => {
+// Компонент списка, который принимает onOpenPlayer
+const PllList = ({ trainingCardId, showAnswer, setShowAnswer, onOpenPlayer }) => {
     const { groupedPLLs, filteredPLLs } = usePll();
 
     if (filteredPLLs.length === 0) {
@@ -126,7 +126,13 @@ const PllList = ({ trainingCardId, showAnswer, setShowAnswer }) => {
                         <AnimatePresence>
                             {plls.map(pll => (
                                 <motion.div layout key={pll.id} id={`pll-card-${pll.id}`} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.2 }}>
-                                    <PllCard pll={pll} isTraining={trainingCardId === pll.id} showAnswer={showAnswer} onShowAnswer={() => setShowAnswer(true)} />
+                                    <PllCard 
+                                        pll={pll} 
+                                        isTraining={trainingCardId === pll.id} 
+                                        showAnswer={showAnswer} 
+                                        onShowAnswer={() => setShowAnswer(true)}
+                                        onOpenPlayer={onOpenPlayer}
+                                    />
                                 </motion.div>
                             ))}
                         </AnimatePresence>
@@ -137,22 +143,33 @@ const PllList = ({ trainingCardId, showAnswer, setShowAnswer }) => {
     );
 };
 
-// Главный компонент страницы, который объединяет всё
+// Основной контент страницы, управляющий состояниями
 const PllPageContent = () => {
     const [trainingCardId, setTrainingCardId] = useState(null);
     const [showAnswer, setShowAnswer] = useState(false);
+    
+    const [playerState, setPlayerState] = useState({ isOpen: false, alg: null, name: null, stage: null });
+    
+    const openPlayer = (data) => setPlayerState({ isOpen: true, ...data });
+    const closePlayer = () => setPlayerState({ isOpen: false, alg: null, name: null, stage: null });
 
     return (
         <>
             <PllControls setTrainingCardId={setTrainingCardId} setShowAnswer={setShowAnswer} />
             <main style={{ marginTop: '2rem' }}>
-                <PllList trainingCardId={trainingCardId} showAnswer={showAnswer} setShowAnswer={setShowAnswer} />
+                <PllList 
+                    trainingCardId={trainingCardId} 
+                    showAnswer={showAnswer} 
+                    setShowAnswer={setShowAnswer}
+                    onOpenPlayer={openPlayer}
+                />
             </main>
+            <PlayerModal {...playerState} onClose={closePlayer} />
         </>
     );
 };
 
-// Оборачиваем всё в провайдер
+// Компонент-обертка, предоставляющий PllContext
 const PllPage = () => {
     return (
         <PllProvider>
