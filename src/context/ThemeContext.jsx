@@ -1,10 +1,10 @@
 ﻿import React, { createContext, useContext, useEffect } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { usePreferences } from '../hooks/usePreferences'; // ИЗМЕНЕНИЕ
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useLocalStorage('theme', 'light');
+  const [theme, setTheme] = usePreferences('theme', 'light'); // ИЗМЕНЕНИЕ
 
   useEffect(() => {
     document.documentElement.className = theme;

@@ -1,16 +1,16 @@
 ﻿import React, { createContext, useContext, useState, useMemo } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { usePreferences } from '../hooks/usePreferences'; // ИЗМЕНЕНИЕ
 import { pllData } from '../data/pllData';
 
 const PllContext = createContext();
 
 export const PllProvider = ({ children }) => {
-  const [learnedPLLs, setLearnedPLLs] = useLocalStorage('learnedPLLs', []);
+  const [learnedPLLs, setLearnedPLLs] = usePreferences('learnedPLLs', []); // ИЗМЕНЕНИЕ
   const learnedSet = useMemo(() => new Set(learnedPLLs), [learnedPLLs]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [showAdvanced, setShowAdvanced] = useLocalStorage('showAdvancedPLL', false);
+  const [showAdvanced, setShowAdvanced] = usePreferences('showAdvancedPLL', false); // ИЗМЕНЕНИЕ
 
   const toggleLearned = (id) => {
     const newLearned = new Set(learnedSet);

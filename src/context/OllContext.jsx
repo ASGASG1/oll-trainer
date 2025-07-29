@@ -1,16 +1,16 @@
 ﻿import React, { createContext, useContext, useState, useMemo } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { usePreferences } from '../hooks/usePreferences'; // ИЗМЕНЕНИЕ
 import { ollData } from '../data/ollData';
 
 const OllContext = createContext();
 
 export const OllProvider = ({ children }) => {
-  const [learnedOLLs, setLearnedOLLs] = useLocalStorage('learnedOLLs', []);
+  const [learnedOLLs, setLearnedOLLs] = usePreferences('learnedOLLs', []); // ИЗМЕНЕНИЕ
   const learnedSet = useMemo(() => new Set(learnedOLLs), [learnedOLLs]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [showAdvanced, setShowAdvanced] = useLocalStorage('showAdvanced', false);
+  const [showAdvanced, setShowAdvanced] = usePreferences('showAdvancedOLL', false); // ИЗМЕНЕНИЕ
 
   const toggleLearned = (id) => {
     const newLearned = new Set(learnedSet);

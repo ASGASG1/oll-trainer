@@ -1,37 +1,42 @@
-﻿import React, { useState } from 'react';
-import { OllProvider } from '../context/OllContext';
-import Controls from '../components/layout/Controls';
+﻿import React from 'react';
+import { OllProvider, useOll } from '../context/OllContext';
+import { usePageLogic } from '../hooks/usePageLogic';
+import ControlsPanel from '../components/common/ControlsPanel';
 import OllList from '../components/oll/OllList';
-import PlayerModal from '../components/modal/PlayerModal'; // Импортируем модальное окно
+import PlayerModal from '../components/modal/PlayerModal';
+import { ollData } from '../data/ollData';
 
 const OllPageContent = () => {
-    const [trainingCardId, setTrainingCardId] = useState(null);
-    const [showAnswer, setShowAnswer] = useState(false);
-    
-    // Состояние для модального окна
-    const [playerState, setPlayerState] = useState({ isOpen: false, alg: null, name: null, stage: null });
+    // Получаем всю логику из нашего кастомного хука
+    const {
+        trainingCardId, showAnswer, setShowAnswer,
+        playerState, openPlayer, closePlayer, startTraining
+    } = usePageLogic();
 
-    // Функция для открытия
-    const openPlayer = (data) => setPlayerState({ isOpen: true, ...data });
-    // Функция для закрытия
-    const closePlayer = () => setPlayerState({ isOpen: false, alg: null, name: null, stage: null });
+    // Получаем данные из контекста OLL
+    const ollContext = useOll();
+    
+    // Создаем объект для передачи в панель управления
+    const controlsContext = {
+        ...ollContext,
+        filteredItems: ollContext.filteredOLLs,
+        totalCount: ollData.length
+    };
 
     return (
         <>
-            {/* УБИРАЕМ ТЕСТОВЫЙ ПЛЕЕР */}
-            <Controls 
-                setTrainingCardId={setTrainingCardId}
-                setShowAnswer={setShowAnswer}
+            <ControlsPanel 
+                context={controlsContext} 
+                onStartTraining={(filteredItems) => startTraining(filteredItems, 'oll')} 
             />
             <main style={{ marginTop: '2rem' }}>
                 <OllList 
                     trainingCardId={trainingCardId}
                     showAnswer={showAnswer}
                     setShowAnswer={setShowAnswer}
-                    onOpenPlayer={openPlayer} // Передаем функцию
+                    onOpenPlayer={openPlayer}
                 />
             </main>
-            {/* Рендерим модальное окно */}
             <PlayerModal {...playerState} onClose={closePlayer} />
         </>
     );
