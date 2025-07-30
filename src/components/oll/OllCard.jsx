@@ -1,11 +1,29 @@
 ﻿import React from 'react';
 import { motion } from 'framer-motion';
-import { useOll } from '../../context/OllContext';
+import { useAppStore } from '../../store/appStore';
+import { hapticImpact } from '../../hooks/useNativeFeatures';
+import { Clipboard } from '@capacitor/clipboard';
+import toast from 'react-hot-toast';
+import { ClipboardIcon } from '../common/Icons';
 
-// Теперь onOpenPlayer приходит из пропсов
 export function OllCard({ oll, isTraining, showAnswer, onShowAnswer, onOpenPlayer }) {
-    const { learnedSet, toggleLearned } = useOll();
-    const isLearned = learnedSet.has(oll.id);
+    const learnedOLLs = useAppStore((state) => state.learnedOLLs);
+    const toggleLearnedOLL = useAppStore((state) => state.toggleLearnedOLL);
+    const isLearned = learnedOLLs.has(oll.id);
+
+    const handleToggle = () => {
+        toggleLearnedOLL(oll.id);
+        hapticImpact();
+    };
+
+    const handleCopy = async () => {
+        await Clipboard.write({
+            string: oll.alg
+        });
+        toast.success('Скопировано!');
+        hapticImpact();
+    };
+
     const cardClassName = `oll-card ${isLearned ? 'learned' : ''} ${isTraining ? 'training' : ''}`;
     const checkmarkVariants = {
       hidden: { scale: 0.5, opacity: 0 },
@@ -14,19 +32,15 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
 
     return (
         <motion.article layout className={cardClassName}>
+            {/* ... код для картинки и оверлея остается без изменений ... */}
             <div className="oll-card-image-wrapper">
-                <img 
-                    className="oll-card-image"
-                    src={oll.image} 
-                    alt={`OLL ${oll.id} - ${oll.name}`}
-                    onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/112x112/e2e8f0/94a3b8?text=OLL+${oll.id}`; }}
-                />
+                <img className="oll-card-image" src={oll.image} alt={`OLL ${oll.id} - ${oll.name}`} onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/112x112/e2e8f0/94a3b8?text=OLL+${oll.id}`; }} />
             </div>
             <div className="oll-card-content-wrapper">
                 <div className="oll-card-overlay">
                     <span className="oll-card-number">{oll.id}</span>
                     <label className="oll-card-learned-toggle" title="Отметить как выученный">
-                        <input type="checkbox" checked={isLearned} onChange={() => toggleLearned(oll.id)} style={{position: 'absolute', opacity: 0, width: 0, height: 0}} />
+                        <input type="checkbox" checked={isLearned} onChange={handleToggle} style={{position: 'absolute', opacity: 0, width: 0, height: 0}} />
                         <motion.div className="oll-card-learned-toggle-circle" whileTap={{ scale: 0.9 }}>
                              <motion.svg variants={checkmarkVariants} initial="hidden" animate={isLearned ? "visible" : "hidden"} style={{width: '70%', height: '70%', color: 'white'}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -39,10 +53,14 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
                     {isTraining && !showAnswer ? (
                         <button onClick={onShowAnswer} className="btn btn-blue" style={{width: '100%'}}>Показать ответ</button>
                     ) : (
-                        // ЗАМЕНЯЕМ <a> НА <button>
-                        <button onClick={() => onOpenPlayer({ alg: oll.alg, name: oll.name || `Алгоритм #${oll.id}`, stage: 'OLL' })} className="oll-card-alg">
-                            {oll.alg}
-                        </button>
+                        <div className="alg-container">
+                            <button onClick={() => onOpenPlayer({ alg: oll.alg, name: oll.name || `Алгоритм #${oll.id}`, stage: 'OLL' })} className="oll-card-alg">
+                                {oll.alg}
+                            </button>
+                            <button onClick={handleCopy} className="copy-btn" title="Копировать алгоритм">
+                                <ClipboardIcon />
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

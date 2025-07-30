@@ -1,7 +1,4 @@
-﻿// Данные для Permutation of the Last Layer (PLL)
-// Источник: dedfoma.ru
-
-export const pllData = [
+﻿export const pllData = [
     // Реберные PLL
     { id: "Ua", numId: 1, group: "U-пермутация (рёбра)", name: "Ua Perm", alg: "R U' R U R U R U' R' U' R2'", image: "./files/pll/Ua.gif" },
     { id: "Ub", numId: 2, group: "U-пермутация (рёбра)", name: "Ub Perm", alg: "R2 U R U R' U' R' U' R' U R'", image: "./files/pll/Ub.gif" },

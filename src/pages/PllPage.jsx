@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { PllProvider, usePll } from '../context/PllContext';
+﻿import React, { useMemo } from 'react';
+import { useAppStore } from '../store/appStore';
 import { usePageLogic } from '../hooks/usePageLogic';
 import ControlsPanel from '../components/common/ControlsPanel';
 import PlayerModal from '../components/modal/PlayerModal';
@@ -7,9 +7,33 @@ import { PllCard } from '../components/pll/PllCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { pllData } from '../data/pllData';
 
-// PllList теперь является частью этой страницы, так как он уникален для PLL
 const PllList = ({ trainingCardId, showAnswer, setShowAnswer, onOpenPlayer }) => {
-    const { groupedPLLs, filteredPLLs } = usePll();
+    const searchTerm = useAppStore(state => state.searchTermPLL);
+    const activeFilter = useAppStore(state => state.activeFilterPLL);
+    const learnedSet = useAppStore(state => state.learnedPLLs);
+
+    const filteredPLLs = useMemo(() => {
+        return pllData.filter(pll => {
+            const searchLower = searchTerm.toLowerCase();
+            const matchesSearch = 
+                pll.name.toLowerCase().includes(searchLower) || 
+                String(pll.numId).includes(searchLower) ||
+                pll.id.toLowerCase().includes(searchLower);
+
+            if (!matchesSearch) return false;
+
+            if (activeFilter === 'learned') return learnedSet.has(pll.id);
+            if (activeFilter === 'unlearned') return !learnedSet.has(pll.id);
+            return true;
+        });
+    }, [searchTerm, activeFilter, learnedSet]);
+
+    const groupedPLLs = useMemo(() => {
+        return filteredPLLs.reduce((acc, pll) => {
+            (acc[pll.group] = acc[pll.group] || []).push(pll);
+            return acc;
+        }, {});
+    }, [filteredPLLs]);
 
     if (filteredPLLs.length === 0) {
         return <div style={{textAlign: 'center', padding: '5rem 0'}}><h3 style={{fontSize: '1.5rem', fontWeight: '700'}}>Ничего не найдено</h3></div>;
@@ -41,24 +65,16 @@ const PllList = ({ trainingCardId, showAnswer, setShowAnswer, onOpenPlayer }) =>
     );
 };
 
-const PllPageContent = () => {
+const PllPage = () => {
     const {
         trainingCardId, showAnswer, setShowAnswer,
         playerState, openPlayer, closePlayer, startTraining
     } = usePageLogic();
 
-    const pllContext = usePll();
-
-    const controlsContext = {
-        ...pllContext,
-        filteredItems: pllContext.filteredPLLs,
-        totalCount: pllData.length
-    };
-
     return (
         <>
-            <ControlsPanel 
-                context={controlsContext}
+            <ControlsPanel
+                pageType="pll"
                 onStartTraining={(filteredItems) => startTraining(filteredItems, 'pll')}
             />
             <main style={{ marginTop: '2rem' }}>
@@ -71,14 +87,6 @@ const PllPageContent = () => {
             </main>
             <PlayerModal {...playerState} onClose={closePlayer} />
         </>
-    );
-};
-
-const PllPage = () => {
-    return (
-        <PllProvider>
-            <PllPageContent />
-        </PllProvider>
     );
 };
 

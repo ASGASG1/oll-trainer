@@ -1,11 +1,35 @@
-﻿import React from 'react';
+﻿import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useOll } from '../../context/OllContext';
+import { useAppStore } from '../../store/appStore'; // ИЗМЕНЕНИЕ: Используем Zustand
+import { ollData } from '../../data/ollData';
 import { OllCard } from './OllCard';
 
-// Добавляем onOpenPlayer в пропсы
 const OllList = ({ trainingCardId, showAnswer, setShowAnswer, onOpenPlayer }) => {
-    const { groupedOLLs, filteredOLLs } = useOll();
+    // Получаем состояние напрямую из хранилища Zustand
+    const searchTerm = useAppStore(state => state.searchTermOLL);
+    const activeFilter = useAppStore(state => state.activeFilterOLL);
+    const learnedSet = useAppStore(state => state.learnedOLLs);
+
+    // Логика фильтрации, которая раньше была в контексте
+    const filteredOLLs = useMemo(() => {
+        return ollData.filter(oll => {
+            const matchesSearch = oll.name.toLowerCase().includes(searchTerm.toLowerCase()) || String(oll.id).includes(searchTerm);
+            if (!matchesSearch) return false;
+
+            if (activeFilter === 'learned') return learnedSet.has(oll.id);
+            if (activeFilter === 'unlearned') return !learnedSet.has(oll.id);
+            return true;
+        });
+    }, [searchTerm, activeFilter, learnedSet]);
+
+    // Логика группировки
+    const groupedOLLs = useMemo(() => {
+        return filteredOLLs.reduce((acc, oll) => {
+            (acc[oll.group] = acc[oll.group] || []).push(oll);
+            return acc;
+        }, {});
+    }, [filteredOLLs]);
+
 
     if (filteredOLLs.length === 0) {
         return (
@@ -32,7 +56,7 @@ const OllList = ({ trainingCardId, showAnswer, setShowAnswer, onOpenPlayer }) =>
                                         isTraining={trainingCardId === oll.id}
                                         showAnswer={showAnswer}
                                         onShowAnswer={() => setShowAnswer(true)}
-                                        onOpenPlayer={onOpenPlayer} // Передаем функцию дальше
+                                        onOpenPlayer={onOpenPlayer}
                                     />
                                 </motion.div>
                             ))}

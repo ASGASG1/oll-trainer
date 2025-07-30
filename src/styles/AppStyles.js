@@ -46,12 +46,26 @@ const AppStyles = () => (
       transition: background-color 0.3s, color 0.3s;
       -webkit-tap-highlight-color: transparent;
       overflow-x: hidden;
+      /* Добавляем отступы для всего body, чтобы фон был правильным */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
     
     .app-container {
       max-width: 1280px;
       margin: 0 auto;
-      padding: 0 1rem 3rem;
+      /* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */
+      /* Старые отступы */
+      padding-left: 1rem;
+      padding-right: 1rem;
+      
+      /* Новые отступы, которые учитывают "безопасные зоны" телефона */
+      /* Сначала идет старое значение как запасной вариант, потом новое */
+      padding-top: 1rem; /* Запасной вариант */
+      padding-top: max(1rem, env(safe-area-inset-top)); /* Выбираем больший из двух отступов */
+
+      padding-bottom: 3rem; /* Запасной вариант */
+      padding-bottom: max(3rem, env(safe-area-inset-bottom)); /* Выбираем больший из двух отступов */
     }
 
     /* Header */
@@ -74,7 +88,6 @@ const AppStyles = () => (
       padding: 0.5rem;
     }
     .app-nav a:hover { color: var(--text-light); }
-    /* Стиль для активной ссылки теперь задается в Header.jsx, этот класс можно удалить или оставить */
     .app-nav a.active { color: var(--blue-600); } 
     .dark .app-nav a.active { color: var(--blue-500); }
 
@@ -96,7 +109,10 @@ const AppStyles = () => (
     /* Controls */
     .controls-sticky-container {
       position: sticky;
-      top: 0;
+      /* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */
+      /* Приклеиваем панель не к самому верху, а с учетом отступа безопасной зоны */
+      top: 0; /* Запасной вариант */
+      top: env(safe-area-inset-top);
       z-index: 40;
       padding: 1rem 0;
       background-color: rgba(241, 245, 249, 0.8);
@@ -122,16 +138,13 @@ const AppStyles = () => (
       transition: border-color 0.2s, box-shadow 0.2s;
       font-size: 1rem;
     }
-
-    /* ИЗМЕНЕНИЕ 1: Новый стиль для текста-подсказки */
     .search-input::placeholder {
       color: var(--slate-400);
     }
-
     .dark .search-input {
         border-color: var(--slate-600);
         background-color: var(--slate-700);
-        color: var(--text-dark); /* ИЗМЕНЕНИЕ 2: Явно задаем светлый цвет для вводимого текста */
+        color: var(--text-dark);
     }
     .search-input:focus {
       border-color: var(--blue-500);
@@ -299,6 +312,22 @@ const AppStyles = () => (
         align-items: center;
         justify-content: flex-start;
     }
+    .oll-card-alg {
+      font-family: monospace;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--blue-600);
+      background-color: #dbeafe;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.2s, color 0.2s;
+      word-break: break-all;
+      border: none;
+      text-align: inherit;
+      cursor: pointer;
+    }
 
     .oll-card-overlay {
       position: absolute;
@@ -342,20 +371,6 @@ const AppStyles = () => (
         background-color: var(--green-500);
     }
 
-    .oll-card-alg {
-      font-family: monospace;
-      font-size: 0.875rem;
-      font-weight: 700;
-      color: var(--blue-600);
-      background-color: #dbeafe;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      text-decoration: none;
-      display: inline-block;
-      transition: background-color 0.2s, color 0.2s;
-      word-break: break-all;
-      cursor: pointer;
-    }
     .dark .oll-card-alg {
       color: #93c5fd;
       background-color: rgba(59, 130, 246, 0.15);
@@ -395,6 +410,44 @@ const AppStyles = () => (
         display: none;
     }
 
+	/* --- СТИЛИ ДЛЯ КОНТЕЙНЕРА АЛГОРИТМА --- */
+	.alg-container {
+	    position: relative;
+	    display: flex;
+	    width: 100%;
+	}
+	
+	.alg-container .oll-card-alg {
+	    flex-grow: 1; /* Кнопка с алгоритмом занимает всю ширину */
+	    padding-right: 2.5rem; /* Добавляем отступ справа для иконки */
+	}
+	
+	.copy-btn {
+	    position: absolute;
+	    top: 50%;
+	    right: 0.5rem;
+	    transform: translateY(-50%);
+	    background: none;
+	    border: none;
+	    padding: 0.5rem;
+	    cursor: pointer;
+	    color: var(--blue-600);
+	    opacity: 0.6;
+	    transition: opacity 0.2s, transform 0.2s;
+	}
+	.dark .copy-btn {
+	    color: #93c5fd;
+	}
+	.copy-btn:hover {
+	    opacity: 1;
+	    transform: translateY(-50%) scale(1.1);
+	}
+	.copy-btn svg {
+	    width: 1rem;
+	    height: 1rem;
+	}
+
+
     /* --- УЛУЧШЕНИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ --- */
     @media (max-width: 767px) {
       .btn-text {
@@ -410,7 +463,10 @@ const AppStyles = () => (
 
     @media (max-width: 639px) {
       .app-container {
-        padding: 0 0.75rem 2rem;
+        /* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */
+        /* Убираем боковые отступы отсюда, так как они теперь в общем правиле .app-container */
+        padding-top: 0;
+        padding-bottom: 2rem;
       }
       .app-nav a {
         font-size: 1.1rem;
