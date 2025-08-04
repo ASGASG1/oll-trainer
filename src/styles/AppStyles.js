@@ -46,7 +46,6 @@ const AppStyles = () => (
       transition: background-color 0.3s, color 0.3s;
       -webkit-tap-highlight-color: transparent;
       overflow-x: hidden;
-      /* Добавляем отступы для всего body, чтобы фон был правильным */
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
     }
@@ -54,18 +53,12 @@ const AppStyles = () => (
     .app-container {
       max-width: 1280px;
       margin: 0 auto;
-      /* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */
-      /* Старые отступы */
       padding-left: 1rem;
       padding-right: 1rem;
-      
-      /* Новые отступы, которые учитывают "безопасные зоны" телефона */
-      /* Сначала идет старое значение как запасной вариант, потом новое */
-      padding-top: 1rem; /* Запасной вариант */
-      padding-top: max(1rem, env(safe-area-inset-top)); /* Выбираем больший из двух отступов */
-
-      padding-bottom: 3rem; /* Запасной вариант */
-      padding-bottom: max(3rem, env(safe-area-inset-bottom)); /* Выбираем больший из двух отступов */
+      padding-top: 1rem;
+      padding-top: max(1rem, env(safe-area-inset-top));
+      padding-bottom: 3rem;
+      padding-bottom: max(3rem, env(safe-area-inset-bottom));
     }
 
     /* Header */
@@ -109,9 +102,7 @@ const AppStyles = () => (
     /* Controls */
     .controls-sticky-container {
       position: sticky;
-      /* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */
-      /* Приклеиваем панель не к самому верху, а с учетом отступа безопасной зоны */
-      top: 0; /* Запасной вариант */
+      top: 0;
       top: env(safe-area-inset-top);
       z-index: 40;
       padding: 1rem 0;
@@ -311,6 +302,7 @@ const AppStyles = () => (
         display: flex;
         align-items: center;
         justify-content: flex-start;
+        width: 100%;
     }
     .oll-card-alg {
       font-family: monospace;
@@ -381,6 +373,81 @@ const AppStyles = () => (
       color: #dbeafe;
     }
 
+    /* --- СТИЛИ ДЛЯ КОНТЕЙНЕРА АЛГОРИТМА --- */
+    .alg-container {
+        position: relative;
+        display: flex;
+        width: 100%;
+    }
+
+    .alg-container .oll-card-alg {
+        flex-grow: 1;
+        padding-right: 2.5rem;
+    }
+
+    .copy-btn {
+        position: absolute;
+        top: 50%;
+        right: 0.5rem;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+        color: var(--blue-600);
+        opacity: 0.6;
+        transition: opacity 0.2s, transform 0.2s;
+    }
+    .dark .copy-btn {
+        color: #93c5fd;
+    }
+    .copy-btn:hover {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.1);
+    }
+    .copy-btn svg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    /* --- НОВЫЕ СТИЛИ ДЛЯ ПЕРЕКЛЮЧАТЕЛЯ АЛГОРИТМОВ --- */
+    .alg-switcher-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    .alg-switcher-btn {
+        background: none;
+        border: 1px solid var(--border-light);
+        color: var(--slate-500);
+        border-radius: 9999px;
+        width: 1.75rem;
+        height: 1.75rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .alg-switcher-btn:hover {
+        background-color: var(--slate-200);
+        color: var(--text-light);
+    }
+    .dark .alg-switcher-btn:hover {
+        background-color: var(--slate-700);
+    }
+
+    .alg-info {
+        font-size: 0.75rem;
+        color: var(--slate-400);
+        text-align: center;
+        min-width: 80px; /* Чтобы текст не прыгал при смене */
+    }
+
     /* Modal */
     .modal-overlay {
         position: fixed;
@@ -410,44 +477,6 @@ const AppStyles = () => (
         display: none;
     }
 
-	/* --- СТИЛИ ДЛЯ КОНТЕЙНЕРА АЛГОРИТМА --- */
-	.alg-container {
-	    position: relative;
-	    display: flex;
-	    width: 100%;
-	}
-	
-	.alg-container .oll-card-alg {
-	    flex-grow: 1; /* Кнопка с алгоритмом занимает всю ширину */
-	    padding-right: 2.5rem; /* Добавляем отступ справа для иконки */
-	}
-	
-	.copy-btn {
-	    position: absolute;
-	    top: 50%;
-	    right: 0.5rem;
-	    transform: translateY(-50%);
-	    background: none;
-	    border: none;
-	    padding: 0.5rem;
-	    cursor: pointer;
-	    color: var(--blue-600);
-	    opacity: 0.6;
-	    transition: opacity 0.2s, transform 0.2s;
-	}
-	.dark .copy-btn {
-	    color: #93c5fd;
-	}
-	.copy-btn:hover {
-	    opacity: 1;
-	    transform: translateY(-50%) scale(1.1);
-	}
-	.copy-btn svg {
-	    width: 1rem;
-	    height: 1rem;
-	}
-
-
     /* --- УЛУЧШЕНИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ --- */
     @media (max-width: 767px) {
       .btn-text {
@@ -463,8 +492,6 @@ const AppStyles = () => (
 
     @media (max-width: 639px) {
       .app-container {
-        /* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */
-        /* Убираем боковые отступы отсюда, так как они теперь в общем правиле .app-container */
         padding-top: 0;
         padding-bottom: 2rem;
       }

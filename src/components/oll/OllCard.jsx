@@ -6,10 +6,19 @@ import { Clipboard } from '@capacitor/clipboard';
 import toast from 'react-hot-toast';
 import { ClipboardIcon } from '../common/Icons';
 
+// Маленькие иконки-стрелки
+const ChevronLeft = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>;
+const ChevronRight = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
+
 export function OllCard({ oll, isTraining, showAnswer, onShowAnswer, onOpenPlayer }) {
-    const learnedOLLs = useAppStore((state) => state.learnedOLLs);
-    const toggleLearnedOLL = useAppStore((state) => state.toggleLearnedOLL);
+    const learnedOLLs = useAppStore(state => state.learnedOLLs);
+    const toggleLearnedOLL = useAppStore(state => state.toggleLearnedOLL);
+    const selectedAlgIndexes = useAppStore(state => state.selectedAlgIndexes);
+    const setSelectedAlgIndex = useAppStore(state => state.setSelectedAlgIndex);
+
     const isLearned = learnedOLLs.has(oll.id);
+    const algIndex = selectedAlgIndexes[`oll-${oll.id}`] || 0;
+    const currentAlg = oll.algs[algIndex];
 
     const handleToggle = () => {
         toggleLearnedOLL(oll.id);
@@ -17,10 +26,14 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
     };
 
     const handleCopy = async () => {
-        await Clipboard.write({
-            string: oll.alg
-        });
+        await Clipboard.write({ string: currentAlg.alg });
         toast.success('Скопировано!');
+        hapticImpact();
+    };
+
+    const changeAlg = (direction) => {
+        const newIndex = (algIndex + direction + oll.algs.length) % oll.algs.length;
+        setSelectedAlgIndex(`oll-${oll.id}`, newIndex);
         hapticImpact();
     };
 
@@ -32,7 +45,6 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
 
     return (
         <motion.article layout className={cardClassName}>
-            {/* ... код для картинки и оверлея остается без изменений ... */}
             <div className="oll-card-image-wrapper">
                 <img className="oll-card-image" src={oll.image} alt={`OLL ${oll.id} - ${oll.name}`} onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/112x112/e2e8f0/94a3b8?text=OLL+${oll.id}`; }} />
             </div>
@@ -54,8 +66,8 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
                         <button onClick={onShowAnswer} className="btn btn-blue" style={{width: '100%'}}>Показать ответ</button>
                     ) : (
                         <div className="alg-container">
-                            <button onClick={() => onOpenPlayer({ alg: oll.alg, name: oll.name || `Алгоритм #${oll.id}`, stage: 'OLL' })} className="oll-card-alg">
-                                {oll.alg}
+                            <button onClick={() => onOpenPlayer({ alg: currentAlg.alg, name: oll.name || `Алгоритм #${oll.id}`, stage: 'OLL' })} className="oll-card-alg">
+                                {currentAlg.alg}
                             </button>
                             <button onClick={handleCopy} className="copy-btn" title="Копировать алгоритм">
                                 <ClipboardIcon />
@@ -63,6 +75,16 @@ export function OllCard({ oll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
                         </div>
                     )}
                 </div>
+                {oll.algs.length > 1 && (
+                    // --- ИЗМЕНЕНИЕ ЗДЕСЬ: Оборачиваем счетчик и стрелки в один блок ---
+                    <div className="alg-switcher-container">
+                        <button onClick={() => changeAlg(-1)} className="alg-switcher-btn"><ChevronLeft /></button>
+                        <div className="alg-info">
+                            {algIndex + 1} / {oll.algs.length} {currentAlg.source && `(${currentAlg.source})`}
+                        </div>
+                        <button onClick={() => changeAlg(1)} className="alg-switcher-btn"><ChevronRight /></button>
+                    </div>
+                )}
             </div>
         </motion.article>
     );

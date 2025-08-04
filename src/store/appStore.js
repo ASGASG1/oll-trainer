@@ -2,7 +2,7 @@
 import { Preferences } from '@capacitor/preferences';
 import { ollData } from '../data/ollData';
 import { pllData } from '../data/pllData';
-import { f2lData } from '../data/f2lData'; // Импортируем новые данные
+import { f2lData } from '../data/f2lData';
 
 // Вспомогательная функция для сохранения состояния в нативное хранилище
 const persistState = async (key, value) => {
@@ -28,6 +28,21 @@ export const useAppStore = create((set, get) => ({
         persistState('theme', newTheme);
     },
 
+    // --- Хранилище выбранных вариантов алгоритмов ---
+    // Формат: { "oll-1": 1, "pll-T": 0 } (caseId: algIndex)
+    selectedAlgIndexes: {},
+    initializeSelectedAlgs: async () => {
+        const { value } = await Preferences.get({ key: 'selectedAlgIndexes' });
+        if (value) {
+            set({ selectedAlgIndexes: JSON.parse(value) });
+        }
+    },
+    setSelectedAlgIndex: (caseId, index) => {
+        const newSelection = { ...get().selectedAlgIndexes, [caseId]: index };
+        set({ selectedAlgIndexes: newSelection });
+        persistState('selectedAlgIndexes', newSelection);
+    },
+
     // --- Состояние для раздела OLL ---
     learnedOLLs: new Set(),
     searchTermOLL: '',
@@ -35,17 +50,11 @@ export const useAppStore = create((set, get) => ({
     showAdvancedOLL: false,
     initializeLearnedOLLs: async () => {
         const { value } = await Preferences.get({ key: 'learnedOLLs' });
-        if (value) {
-            set({ learnedOLLs: new Set(JSON.parse(value)) });
-        }
+        if (value) set({ learnedOLLs: new Set(JSON.parse(value)) });
     },
     toggleLearnedOLL: (id) => {
         const newLearned = new Set(get().learnedOLLs);
-        if (newLearned.has(id)) {
-            newLearned.delete(id);
-        } else {
-            newLearned.add(id);
-        }
+        newLearned.has(id) ? newLearned.delete(id) : newLearned.add(id);
         set({ learnedOLLs: newLearned });
         persistState('learnedOLLs', Array.from(newLearned));
     },
@@ -64,17 +73,11 @@ export const useAppStore = create((set, get) => ({
     showAdvancedPLL: false,
     initializeLearnedPLLs: async () => {
         const { value } = await Preferences.get({ key: 'learnedPLLs' });
-        if (value) {
-            set({ learnedPLLs: new Set(JSON.parse(value)) });
-        }
+        if (value) set({ learnedPLLs: new Set(JSON.parse(value)) });
     },
     toggleLearnedPLL: (id) => {
         const newLearned = new Set(get().learnedPLLs);
-        if (newLearned.has(id)) {
-            newLearned.delete(id);
-        } else {
-            newLearned.add(id);
-        }
+        newLearned.has(id) ? newLearned.delete(id) : newLearned.add(id);
         set({ learnedPLLs: newLearned });
         persistState('learnedPLLs', Array.from(newLearned));
     },
@@ -86,24 +89,18 @@ export const useAppStore = create((set, get) => ({
     setActiveFilterPLL: (filter) => set({ activeFilterPLL: filter }),
     setShowAdvancedPLL: (show) => set({ showAdvancedPLL: show }),
 
-    // --- НОВАЯ СЕКЦИЯ: Состояние для раздела F2L ---
+    // --- Состояние для раздела F2L ---
     learnedF2Ls: new Set(),
     searchTermF2L: '',
     activeFilterF2L: 'all',
     showAdvancedF2L: false,
     initializeLearnedF2Ls: async () => {
         const { value } = await Preferences.get({ key: 'learnedF2Ls' });
-        if (value) {
-            set({ learnedF2Ls: new Set(JSON.parse(value)) });
-        }
+        if (value) set({ learnedF2Ls: new Set(JSON.parse(value)) });
     },
     toggleLearnedF2L: (id) => {
         const newLearned = new Set(get().learnedF2Ls);
-        if (newLearned.has(id)) {
-            newLearned.delete(id);
-        } else {
-            newLearned.add(id);
-        }
+        newLearned.has(id) ? newLearned.delete(id) : newLearned.add(id);
         set({ learnedF2Ls: newLearned });
         persistState('learnedF2Ls', Array.from(newLearned));
     },

@@ -6,10 +6,25 @@ import { Clipboard } from '@capacitor/clipboard';
 import toast from 'react-hot-toast';
 import { ClipboardIcon } from '../common/Icons';
 
+// Маленькие иконки-стрелки
+const ChevronLeft = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>;
+const ChevronRight = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
+
 export function F2lCard({ f2l, onOpenPlayer }) {
-    const learnedF2Ls = useAppStore((state) => state.learnedF2Ls);
-    const toggleLearnedF2L = useAppStore((state) => state.toggleLearnedF2L);
+    const learnedF2Ls = useAppStore(state => state.learnedF2Ls);
+    const toggleLearnedF2L = useAppStore(state => state.toggleLearnedF2L);
+    const selectedAlgIndexes = useAppStore(state => state.selectedAlgIndexes);
+    const setSelectedAlgIndex = useAppStore(state => state.setSelectedAlgIndex);
+
     const isLearned = learnedF2Ls.has(f2l.id);
+    const caseId = `f2l-${f2l.id}`;
+    const algIndex = selectedAlgIndexes[caseId] || 0;
+    
+    // Проверка на случай, если в данных нет массива algs
+    if (!f2l.algs || f2l.algs.length === 0) {
+        return <div>Ошибка: нет данных об алгоритмах.</div>;
+    }
+    const currentAlg = f2l.algs[algIndex];
 
     const handleToggle = () => {
         toggleLearnedF2L(f2l.id);
@@ -17,8 +32,14 @@ export function F2lCard({ f2l, onOpenPlayer }) {
     };
 
     const handleCopy = async () => {
-        await Clipboard.write({ string: f2l.alg });
+        await Clipboard.write({ string: currentAlg.alg });
         toast.success('Скопировано!');
+        hapticImpact();
+    };
+
+    const changeAlg = (direction) => {
+        const newIndex = (algIndex + direction + f2l.algs.length) % f2l.algs.length;
+        setSelectedAlgIndex(caseId, newIndex);
         hapticImpact();
     };
 
@@ -48,14 +69,23 @@ export function F2lCard({ f2l, onOpenPlayer }) {
                 <h4 className="oll-card-title">{f2l.name}</h4>
                 <div className="oll-card-alg-wrapper">
                     <div className="alg-container">
-                        <button onClick={() => onOpenPlayer({ alg: f2l.alg, name: f2l.name, stage: 'F2L' })} className="oll-card-alg">
-                            {f2l.alg}
+                        <button onClick={() => onOpenPlayer({ alg: currentAlg.alg, name: f2l.name, stage: 'F2L' })} className="oll-card-alg">
+                            {currentAlg.alg}
                         </button>
                         <button onClick={handleCopy} className="copy-btn" title="Копировать алгоритм">
                             <ClipboardIcon />
                         </button>
                     </div>
                 </div>
+                {f2l.algs.length > 1 && (
+                    <div className="alg-switcher-container">
+                        <button onClick={() => changeAlg(-1)} className="alg-switcher-btn"><ChevronLeft /></button>
+                        <div className="alg-info">
+                            {algIndex + 1} / {f2l.algs.length} {currentAlg.source && `(${currentAlg.source})`}
+                        </div>
+                        <button onClick={() => changeAlg(1)} className="alg-switcher-btn"><ChevronRight /></button>
+                    </div>
+                )}
             </div>
         </motion.article>
     );

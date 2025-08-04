@@ -6,10 +6,26 @@ import { Clipboard } from '@capacitor/clipboard';
 import toast from 'react-hot-toast';
 import { ClipboardIcon } from '../common/Icons';
 
+// Маленькие иконки-стрелки
+const ChevronLeft = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>;
+const ChevronRight = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
+
 export function PllCard({ pll, isTraining, showAnswer, onShowAnswer, onOpenPlayer }) {
-    const learnedPLLs = useAppStore((state) => state.learnedPLLs);
-    const toggleLearnedPLL = useAppStore((state) => state.toggleLearnedPLL);
+    // Исправляем способ получения данных из Zustand, чтобы избежать лишних ререндеров
+    const learnedPLLs = useAppStore(state => state.learnedPLLs);
+    const toggleLearnedPLL = useAppStore(state => state.toggleLearnedPLL);
+    const selectedAlgIndexes = useAppStore(state => state.selectedAlgIndexes);
+    const setSelectedAlgIndex = useAppStore(state => state.setSelectedAlgIndex);
+
     const isLearned = learnedPLLs.has(pll.id);
+    const caseId = `pll-${pll.id}`;
+    const algIndex = selectedAlgIndexes[caseId] || 0;
+    
+    // Проверка на случай, если в данных нет массива algs
+    if (!pll.algs || pll.algs.length === 0) {
+        return <div>Ошибка: нет данных об алгоритмах.</div>;
+    }
+    const currentAlg = pll.algs[algIndex];
 
     const handleToggle = () => {
         toggleLearnedPLL(pll.id);
@@ -17,10 +33,14 @@ export function PllCard({ pll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
     };
 
     const handleCopy = async () => {
-        await Clipboard.write({
-            string: pll.alg
-        });
+        await Clipboard.write({ string: currentAlg.alg });
         toast.success('Скопировано!');
+        hapticImpact();
+    };
+
+    const changeAlg = (direction) => {
+        const newIndex = (algIndex + direction + pll.algs.length) % pll.algs.length;
+        setSelectedAlgIndex(caseId, newIndex);
         hapticImpact();
     };
 
@@ -32,7 +52,6 @@ export function PllCard({ pll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
 
     return (
         <motion.article layout className={cardClassName}>
-            {/* ... код для картинки и оверлея остается без изменений ... */}
             <div className="oll-card-image-wrapper">
                 <img className="oll-card-image" src={pll.image} alt={`PLL ${pll.name}`} onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/112x112/e2e8f0/94a3b8?text=${pll.id}`; }} />
             </div>
@@ -54,8 +73,8 @@ export function PllCard({ pll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
                         <button onClick={onShowAnswer} className="btn btn-blue" style={{width: '100%'}}>Показать ответ</button>
                     ) : (
                         <div className="alg-container">
-                            <button onClick={() => onOpenPlayer({ alg: pll.alg, name: pll.name, stage: 'PLL' })} className="oll-card-alg">
-                                {pll.alg}
+                            <button onClick={() => onOpenPlayer({ alg: currentAlg.alg, name: pll.name, stage: 'PLL' })} className="oll-card-alg">
+                                {currentAlg.alg}
                             </button>
                             <button onClick={handleCopy} className="copy-btn" title="Копировать алгоритм">
                                 <ClipboardIcon />
@@ -63,6 +82,15 @@ export function PllCard({ pll, isTraining, showAnswer, onShowAnswer, onOpenPlaye
                         </div>
                     )}
                 </div>
+                {pll.algs.length > 1 && (
+                    <div className="alg-switcher-container">
+                        <button onClick={() => changeAlg(-1)} className="alg-switcher-btn"><ChevronLeft /></button>
+                        <div className="alg-info">
+                            {algIndex + 1} / {pll.algs.length} {currentAlg.source && `(${currentAlg.source})`}
+                        </div>
+                        <button onClick={() => changeAlg(1)} className="alg-switcher-btn"><ChevronRight /></button>
+                    </div>
+                )}
             </div>
         </motion.article>
     );

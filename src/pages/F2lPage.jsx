@@ -62,12 +62,12 @@ const F2lList = ({ onOpenPlayer }) => {
 };
 
 const F2lPage = () => {
-    // Для F2L пока не нужен режим тренировки, поэтому берем только часть логики
+    // Для F2L режим тренировки "Случайный алгоритм" не так актуален,
+    // поэтому мы не передаем onStartTraining в ControlsPanel.
     const { playerState, openPlayer, closePlayer } = usePageLogic();
 
     return (
         <>
-            {/* Добавляем панель управления для F2L */}
             <ControlsPanel pageType="f2l" />
             <main style={{ marginTop: '2rem' }}>
                 <F2lList 

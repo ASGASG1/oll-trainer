@@ -41,14 +41,16 @@ export default function App() {
     const initializeTheme = useAppStore((state) => state.initializeTheme);
     const initializeLearnedOLLs = useAppStore((state) => state.initializeLearnedOLLs);
     const initializeLearnedPLLs = useAppStore((state) => state.initializeLearnedPLLs);
-    const initializeLearnedF2Ls = useAppStore((state) => state.initializeLearnedF2Ls); // Добавляем инициализацию F2L
+    const initializeLearnedF2Ls = useAppStore((state) => state.initializeLearnedF2Ls);
+    const initializeSelectedAlgs = useAppStore((state) => state.initializeSelectedAlgs);
 
     useEffect(() => {
         initializeTheme();
         initializeLearnedOLLs();
         initializeLearnedPLLs();
-        initializeLearnedF2Ls(); // Вызываем ее
-    }, [initializeTheme, initializeLearnedOLLs, initializeLearnedPLLs, initializeLearnedF2Ls]);
+        initializeLearnedF2Ls();
+        initializeSelectedAlgs();
+    }, [initializeTheme, initializeLearnedOLLs, initializeLearnedPLLs, initializeLearnedF2Ls, initializeSelectedAlgs]);
 
     useEffect(() => {
         document.documentElement.className = theme;

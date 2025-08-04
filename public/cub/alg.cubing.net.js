@@ -219,9 +219,7 @@ algxControllers.controller("algxController", [
       },
     ]);
 
-    // --- ИСПРАВЛЕННАЯ ЛОГИКА ДЛЯ ЗАГОЛОВКА ---
     $scope.title_default = "";
-    // Сначала проверяем наш новый параметр 'name' из React-приложения
     if ("name" in search) {
         try {
             $scope.title = decodeURIComponent(search["name"]);
@@ -229,18 +227,14 @@ algxControllers.controller("algxController", [
             $scope.title = $scope.title_default;
         }
     } 
-    // Если его нет, проверяем старый параметр 'title'
     else if ("title" in search) {
         $scope.title = search["title"];
     } 
-    // Если нет ни того, ни другого, ставим значение по умолчанию
     else {
         $scope.title = $scope.title_default;
     }
-    // --- КОНЕЦ ИСПРАВЛЕНИЯ ---
 
     $scope.nextView = function () {
-      // TODO: Is there a better way to do view cycling?
       var idx = $scope.view_list.indexOf($scope.view);
       $scope.view = $scope.view_list[(idx + 1) % $scope.view_list.length];
       $scope.updateLocation();
@@ -262,15 +256,11 @@ algxControllers.controller("algxController", [
       "reconstruction-end-with-setup": "reconstruction",
     };
     $scope.invert = function () {
-      // The setup stays the same. It's like magic!
       $scope.alg = alg.cube.invert($scope.alg);
-
       var currentPosition = twistyScene.getPosition();
       var maxPosition = twistyScene.getMaxPosition();
       $scope.current_move = maxPosition - currentPosition;
-
       $scope.type = $scope.type_map[inverseTypeMap[$scope.type.id]];
-
       $scope.addHistoryCheckpoint = true;
     };
 
@@ -303,9 +293,7 @@ algxControllers.controller("algxController", [
     };
 
     function escape_alg(alg) {
-      if (!alg) {
-        return alg;
-      }
+      if (!alg) { return alg; }
       var escaped = alg;
       escaped = escaped.replace(/_/g, "&#95;").replace(/ /g, "_");
       escaped = escaped.replace(/\+/g, "&#2b;");
@@ -314,12 +302,10 @@ algxControllers.controller("algxController", [
     }
 
     function unescape_alg(alg) {
-      if (!alg) {
-        return alg;
-      }
+      if (!alg) { return alg; }
       var unescaped = alg;
       unescaped = unescaped.replace(/-/g, "'").replace(/&#45;/g, "-");
-      unescaped = unescaped.replace(/\+/g, " ").replace(/&#2b;/g, "+"); // Recognize + as space. Many URL encodings will do this.
+      unescaped = unescaped.replace(/\+/g, " ").replace(/&#2b;/g, "+");
       unescaped = unescaped.replace(/_/g, " ").replace(/&#95;/g, "_");
       return unescaped;
     }
@@ -331,8 +317,6 @@ algxControllers.controller("algxController", [
 
     function setWithDefault(name, value) {
       var _default = $scope[name + "_default"];
-      // console.log(name);
-      // console.log(_default);
       $location.search(name, value == _default ? null : value);
     }
 
@@ -340,15 +324,11 @@ algxControllers.controller("algxController", [
       var algWithCommentsGreyed = ($scope.alg + "\n")
         .replace(/(\/\/.*)[\n\r]/g, '[COLOR="gray"]$1[/COLOR]\n')
         .replace(/(\/\*[^(\*\/)]*\*\/)/g, '[COLOR="gray"]$1[/COLOR]');
-      var text ="";
+      var text = algWithCommentsGreyed + '\n[COLOR="gray"]// View at [URL="' + url + '"]dedfoma.ru[/URL][/COLOR]';
       if ($scope.setup !== "") {
-        text =
-          '[COLOR="gray"]/* Scramble */[/COLOR]\n' +
-          $scope.setup +
-          '\n\n [COLOR="gray"]/* Solve */[/COLOR]\n' +
-          text;
+        text = '[COLOR="gray"]/* Scramble */[/COLOR]\n' + $scope.setup + '\n\n [COLOR="gray"]/* Solve */[/COLOR]\n' + text;
       }
-      return text.trim(); // The trim is redundant for angular.js, but let's keep it just in case.
+      return text.trim();
     }
 
     $scope.updateLocation = function () {
@@ -361,25 +341,19 @@ algxControllers.controller("algxController", [
       setWithDefault("stage", $scope.stage.id);
       setWithDefault("title", $scope.title);
       setWithDefault("view", $scope.view.id);
-      setWithDefault("fbclid", null); // Remove Facebook tracking ID
-      //TODO: Update sharing links
+      setWithDefault("fbclid", null);
 
-      // TODO: Inject playback view into parameters properly.
-      // Right now it's fine because the view paramater is hidden in editor view, which is the only time you see a forum link.
-      $scope.share_url = "";
- //     if ($location.url().indexOf("?") !== -1) {
- //       $scope.share_url += "&view=playback";
- //     }
-      $scope.share_forum_short ="";
-//        '[URL="' + $scope.share_url + '"]' + $scope.alg + "[/URL]";
-      $scope.share_forum_long ="" ;//forumLinkText($scope.share_url);
+      $scope.share_url = "https://dedfoma.ru" + $location.url();
+      if ($location.url().indexOf("?") !== -1) {
+        $scope.share_url += "&view=playback";
+      }
+      $scope.share_forum_short = '[URL="' + $scope.share_url + '"]' + $scope.alg + "[/URL]";
+      $scope.share_forum_long = forumLinkText($scope.share_url);
       $scope.goToTwizzle = async () => {
         const cubingAlg = await globalThis.algPromise
         const { TwistyPlayer } = await globalThis.twistyPromise;
-
         const theAlg = alg.cube.toCubingJSAlg(alg.cube.fromString($scope.alg), { alg: cubingAlg });
         const theSetup = alg.cube.toCubingJSAlg(alg.cube.fromString($scope.setup), { alg: cubingAlg });
-
         const config = {
           alg: theAlg,
           experimentalSetupAlg: theSetup,
@@ -393,35 +367,16 @@ algxControllers.controller("algxController", [
         if ($scope.title) {
           player.experimentalTitle = $scope.title
         }
-
         const url = await player.experimentalModel.twizzleLink();
         console.log(url);
-
         const a = document.createElement("a");
         a.href = url;
         a.click();
       }
     };
 
-    var colorMap = {
-      y: 0xffff00,
-      w: 0xffffff,
-      b: 0x0000ff,
-      g: 0x00ff00,
-      o: 0xff8800,
-      r: 0xff0000,
-      x: 0x444444,
-    };
-
-    var lightColorMap = {
-      y: 0xdddd00,
-      w: 0xcccccc,
-      b: 0x000099,
-      g: 0x00bb00,
-      o: 0xbb6600,
-      r: 0xaa0000,
-      x: 0x333333,
-    };
+    var colorMap = { y: 0xffff00, w: 0xffffff, b: 0x0000ff, g: 0x00ff00, o: 0xff8800, r: 0xff0000, x: 0x444444, };
+    var lightColorMap = { y: 0xdddd00, w: 0xcccccc, b: 0x000099, g: 0x00bb00, o: 0xbb6600, r: 0xaa0000, x: 0x333333, };
 
     function colorList(str) {
       var out = [];
@@ -444,20 +399,12 @@ algxControllers.controller("algxController", [
       return index + column;
     }
 
-    // We set this variable outside so that it will be overwritten.
-    // This currently helps with performance, presumably due to garbage collection.
     var twistyScene;
-
     var selectionStart = document.getElementById("algorithm").selectionStart;
-
     var webgl = (function () {
       try {
         var canvas = document.createElement("canvas");
-        return (
-          !!window.WebGLRenderingContext &&
-          (canvas.getContext("webgl") ||
-            canvas.getContext("experimental-webgl"))
-        );
+        return (!!window.WebGLRenderingContext && (canvas.getContext("webgl") || canvas.getContext("experimental-webgl")));
       } catch (e) {
         return false;
       }
@@ -466,14 +413,12 @@ algxControllers.controller("algxController", [
 
     $scope.twisty_init = function () {
       $("#viewer").empty();
-
       twistyScene = new twisty.scene({
         allowDragging: true,
         renderer: Renderer,
         cachedRenderer: true,
       });
       $("#viewer").append($(twistyScene.getDomElement()));
-
       twistyScene.initializePuzzle({
         type: "cube",
         dimension: $scope.puzzle.dimension,
@@ -482,7 +427,6 @@ algxControllers.controller("algxController", [
         cubies: !$scope.hollow,
         stickerBorder: false,
         doubleSided: !$scope.hint_stickers,
-        // "borderWidth": 1,
         colors: colorList($scope.scheme.scheme),
       });
 
@@ -509,16 +453,13 @@ algxControllers.controller("algxController", [
       }
 
       var type = $scope.type.type;
-
       init = alg.cube.toMoves(init);
       var algo = alg.cube.toMoves(algoFull);
-
       twistyScene.setupAnimation(algo, {
         init: init,
         type: type,
       });
 
-      // Temporary hack to work around highlighting bug.
       function isNested(alg) {
         for (var move in alg) {
           var type = alg[move].type;
@@ -533,10 +474,6 @@ algxControllers.controller("algxController", [
       var previousStart = 0;
       var previousEnd = 0;
       function highlightCurrentMove(force) {
-        // if (!force && (algNested || touchBrowser || !$scope.animating)) {
-        //   return;
-        // }
-        // TODO: Make a whole lot more efficient.
         if (Math.floor(parseFloat($scope.current_move)) > algo.length) {
           return;
         }
@@ -550,7 +487,6 @@ algxControllers.controller("algxController", [
           return;
         }
         $("#algorithm_shadow").find("#middle").show();
-
         var newStart = locationToIndex(
           $scope.alg,
           current_move.location.first_line,
@@ -561,19 +497,11 @@ algxControllers.controller("algxController", [
           current_move.location.last_line,
           current_move.location.last_column
         );
-
         if (newStart == previousStart && newEnd == previousEnd) {
           return;
         }
-
-        $("#algorithm_shadow")
-          .find("#start")
-          .text($scope.alg.slice(0, newStart));
-        $("#algorithm_shadow")
-          .find("#middle")
-          .text($scope.alg.slice(newStart, newEnd));
-        // $("#algorithm_shadow").find("#end"   ).text($scope.alg.slice(newEnd));
-
+        $("#algorithm_shadow").find("#start").text($scope.alg.slice(0, newStart));
+        $("#algorithm_shadow").find("#middle").text($scope.alg.slice(newStart, newEnd));
         previousStart = newStart;
         previousEnd = newEnd;
       }
@@ -583,25 +511,20 @@ algxControllers.controller("algxController", [
       var resizeFunction = function () {
         $("#algorithm_shadow").width($("#algorithm").width());
         twistyScene.resize();
-        // Force redraw. iOS Safari until iOS 7 has a bug where vh units are not recalculated.
-        // Hiding and then showing immediately was the first thing I tried that forces a recalculation.
         $("#controls").find("button").hide().show();
-        // Also fixes an iOS Safari reorientation bug.
         window.scrollTo(0, 0);
       };
       var debounceResize = debounce(resizeFunction, 0);
       $(window).resize(resizeFunction);
       $scope.$watch("view", resizeFunction);
 
-      $("#moveIndex").val(0); //TODO: Move into twisty.js
+      $("#moveIndex").val(0);
 
       function getCurrentMove() {
-        // console.log(twistyScene.debug.getIndex());
         var idx = twistyScene.getPosition();
         var val = parseFloat($scope.current_move);
         if (idx != val && fire) {
           $scope.$apply("current_move = " + idx);
-          // TODO: Move listener to detect index change.
           highlightCurrentMove();
         }
       }
@@ -613,7 +536,6 @@ algxControllers.controller("algxController", [
         };
       }
 
-      // TODO: With a single twistyScene this own't be necessary
       $("#reset").unbind("click");
       $("#back").unbind("click");
       $("#play").unbind("click");
@@ -656,8 +578,6 @@ algxControllers.controller("algxController", [
             move.location.first_column
           );
           if (loc == selectionStart && loc !== 0) {
-            // Show the beginning of the current move if our cursor is... at the beginning.
-            // TODO: Handle moves like R1000 properly.
             i += 0.2;
             break;
           }
@@ -666,11 +586,7 @@ algxControllers.controller("algxController", [
           }
         }
         fire = false;
-        // console.log(apply)
-        // if (apply) {
         $scope.current_move = i;
-        // $scope.$apply("current_move = " + i);
-        // }
         twistyScene.setPosition(i);
         fire = true;
         highlightCurrentMove();
@@ -684,7 +600,6 @@ algxControllers.controller("algxController", [
 
       followSelection(false);
 
-      // twistyScene.play.reset();
       twistyScene.addListener("animating", function (animating) {
         $scope.$apply("animating = " + animating);
       });
@@ -705,17 +620,22 @@ algxControllers.controller("algxController", [
         var idx = twistyScene.getPosition();
         var val = parseFloat($scope.current_move);
         if (fire) {
-          // We need to parse the string.
-          // See https://github.com/angular/angular.js/issues/1189 and linked issue/discussion.
           twistyScene.setPosition(val);
         }
         highlightCurrentMove();
       });
       $scope.$watch("speed", function () {
         twistyScene.setSpeed($scope.speed);
-      }); // initialize the watch
+      });
 
       $scope.updateLocation();
+    
+    // ИСПРАВЛЕНИЕ: Используем setTimeout, чтобы сброс выполнился после всех остальных настроек
+    setTimeout(function() {
+        twistyScene.play.reset();
+        // Принудительно обновляем UI, чтобы он соответствовал сброшенной анимации
+        $scope.$apply("current_move = 0"); 
+    }, 0);
     };
 
     [
@@ -876,38 +796,13 @@ algxControllers.controller("algxController", [
       }
     };
 
-    // if ("serviceWorker" in navigator) {
-    //   navigator.serviceWorker.getRegistration().then(
-    //     function (r) {
-    //       console.log(r);
-    //       if (!r) {
-    //         navigator.serviceWorker.register("./service-worker.js").then(
-    //           function (registration) {
-    //             console.log(
-    //               "Registered service worker with scope: ",
-    //               registration.scope
-    //             );
-    //           },
-    //           function (err) {
-    //             console.error(err);
-    //           }
-    //         );
-    //       } else {
-    //         console.log("Service worker already registered.");
-    //       }
-    //     },
-    //     function (err) {
-    //       console.error("Could not enable offline support.");
-    //     }
-    //   );
-    // }
-
     // For debugging.
     ss = $scope;
     l = $location;
   },
 ]);
 
+// --- Код для принудительного мобильного вида ---
 try {
     const params = new URLSearchParams(window.location.search);
     const viewMode = params.get('view_mode');
@@ -915,5 +810,5 @@ try {
         document.body.classList.add('mobile-layout');
     }
 } catch(e) {
-    console.error("Ошибка установки мобильного вида:", e);
+    console.error("Ошибка установки мобильного вида:", e);
 }
